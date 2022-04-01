@@ -1,0 +1,5 @@
+build:
+  docker:
+    worker: Dockerfile
+  config:
+    BOT_TOKEN: $BOT_TOKEN
