@@ -29,7 +29,7 @@ $ python3 bot.py
 ```
 
 # Build Using Docker
-You can also run the bot using. To build the docker container execute the following command:
+You can also run the bot using docker. To build the docker container execute the following command:
 ```
 $ docker build -t noob-bot .
 ```
