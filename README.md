@@ -12,9 +12,16 @@ Now you have to set up a enviroment varibale named **BOT_TOKEN**
 $ export BOT_TOKEN=<your_bot_token>
 ```
 
-Now you have to set up [nsjail](https://github.com/google/nsjail.git) to use `exec` command of the bot. A shell script is availlable to build nsjail.
+Now you have to build [nsjail](https://github.com/google/nsjail.git) to use `exec` command of the bot.
+First clone the repository:
 ```
-$ ./installNsJail.sh
+$ git clone https://github.com/google/nsjail.git nsjail
+```
+Then build it and put the binary in `/usr/sbin`. You can tweak the path of the binary by editing the variable `NSJAIL_PATH` of nsjail.py:
+```
+$ cd nsjail
+$ make
+$ mv nsjail /usr/sbin/nsjail
 ```
 Now you can run the bot
 ```
@@ -22,7 +29,7 @@ $ python3 bot.py
 ```
 
 # Build Using Docker
-A docker image is also available. To build it execute the following command:
+You can also run the bot in docker. To build it execute the following command:
 ```
 $ docker build -t noob-bot .
 ```
