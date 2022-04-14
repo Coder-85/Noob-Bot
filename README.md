@@ -36,5 +36,5 @@ $ docker build -t noob-bot .
 
 Run the docker container.
 ```
-$ docker run -e "BOT_TOKEN=<your_bot_token> noob-bot
+$ docker run -e "BOT_TOKEN=<your_bot_token>" noob-bot
 ```
