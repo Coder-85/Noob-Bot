@@ -1,6 +1,8 @@
 import discord
+import os
 import typing
 import asyncio
+import requests
 from discord.ext import commands
 from discord.ext.commands import has_permissions, CheckFailure, has_role
 from googletrans import Translator, LANGUAGES
@@ -80,19 +82,48 @@ class TranslateAndSearch(commands.Cog):
 
     @commands.command(name='search', aliases=['google'])
     async def search(self, ctx, *, text: str):
-        """Searches for text on google\n
+        """Searches for text on Google\n
         Usage: `?search <text>` or `?google <text>`\n"""
-    
-        url = f"https://www.google.com/search?q={text.replace(' ', '+')}"
 
+        url = f"https://www.google.com/search?q={text.replace(' ', '+')}"
         embed = discord.Embed(
-            title=f"Results for `{text}`",
+            title=f"Results for **{text}**",
             url=url,
             colour = discord.Colour.random()
         )
+
         embed.set_footer(text=f"{ctx.author}", icon_url=ctx.author.avatar_url)
         embed.timestamp = ctx.message.created_at
         await ctx.send(embed=embed)
+
+    @commands.command(name='search-r', aliases=['google-r'])
+    async def searchWithResults(self, ctx, *, text: str):
+        """Searches for text on Google and send top 6 results\n
+        Usage: `?search-r <text>` or `?google-r <text>` \n"""
+    
+        url = f"https://www.google.com/search?q={text.replace(' ', '+')}"
+        embed = discord.Embed(
+            title=f"Results for **{text}**",
+            url=url,
+            colour = discord.Colour.random()
+        )
+        
+        with ctx.typing():
+            r = requests.get(f"https://www.googleapis.com/customsearch/v1?key={os.getenv('GOOGLE_API_KEY')}&cx={os.getenv('CX_TOKEN')}&q={text}").json()
+            index = 1
+            for i in r.get('items', None):
+                if i.get('kind', None) == 'customsearch#result':
+                    try:
+                        embed.add_field(name=f"Result: {index}", value=f"**[{i['title']}]({i['link']})** \n{i['snippet']}", inline=False)
+                        index += 1
+                    except:
+                        pass
+
+                if index > 6: break
+
+            embed.set_footer(text=f"{ctx.author}", icon_url=ctx.author.avatar_url)
+            embed.timestamp = ctx.message.created_at
+            await ctx.send(embed=embed)
         
 def setup(bot):
     bot.add_cog(TranslateAndSearch(bot))

@@ -9,12 +9,12 @@ from .snekbox import nsjail
 
 def _get_code(content: str):
     if content.startswith("```") and content.endswith("```"):
-        new_content:str = content.replace("```", "").replace("py", "")
+        new_content: str = content.replace("```", "").replace("py", "")
         return new_content
 
     return content
 
-async def post_eval_req(code: str):
+def post_eval_req(code: str):
     result = nsjail.NsJail().python3(_get_code(code))
     output = {
         "stdout": result.stdout,
@@ -51,10 +51,10 @@ def format_output(output: dict):
 
 def upload_output(data: str):
     if len(data) > 10000:
-        return "Output too long to upload"
+        return "Output too long to upload to hastebin"
     
     req = requests.post("https://hastebin.com/documents", data=data.encode("utf-8"))
     if req.status_code != 200:
         return "Failed to upload output"
 
-    return f"Output too long to send. Sent to pastebin instead\n<https://www.toptal.com/developers/hastebin/{req.json()['key']}>"
+    return f"Output too long to send. Sent to hastebin instead\n<https://www.toptal.com/developers/hastebin/{req.json()['key']}>"

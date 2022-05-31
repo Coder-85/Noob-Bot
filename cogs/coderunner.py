@@ -14,7 +14,7 @@ class CodeRunner(commands.Cog):
     @commands.command(name='exec', aliases=['r', 'run', 'eval', 'e'])
     async def exec(self, ctx, *, code: str):
         """Executes a code snippet in the Python 3 environment"""
-        result = await runcode.post_eval_req(code)
+        result = runcode.post_eval_req(code)
 
         await ctx.reply(result)
 

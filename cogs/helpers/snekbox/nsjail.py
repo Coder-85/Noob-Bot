@@ -29,7 +29,7 @@ NSJAIL_CFG = "./cogs/helpers/snekbox/nsjail/snekbox.cfg"
 # Limit of stdout bytes we consume before terminating nsjail
 OUTPUT_MAX = 1_000_000  # 1 MB
 READ_CHUNK_SIZE = 10_000  # chars
-
+CODE_TEMPLATE = "from math import *\n{}"
 
 class NsJail:
     """
@@ -163,7 +163,7 @@ class NsJail:
                 "--log", nsj_log.name,
                 *nsjail_args,
                 "--",
-                self.config.exec_bin.path, *self.config.exec_bin.arg, *py_args, code
+                self.config.exec_bin.path, *self.config.exec_bin.arg, *py_args, CODE_TEMPLATE.format(code)
             )
 
             msg = "Executing code..."

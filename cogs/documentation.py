@@ -1,4 +1,5 @@
 import discord
+import os
 import typing
 import asyncio
 from discord.ext import commands
@@ -8,6 +9,13 @@ from contextlib import redirect_stdout
 from io import StringIO
 import textwrap
 import importlib
+
+NOT_FOUND_TEXT = "Query could not be found! \
+If your query is in any module please tell the author to install the module so that \
+you can get the documentation."
+
+SHELL_COMMAND = "pandoc convert temp.rst"
+SHELL_COMMAND = "pandoc -s -f rst -t plain --wrap=preserve temp.rst -o temp.txt"
 
 class GetDocumentation(commands.Cog):
     def __init__(self, bot):
@@ -45,7 +53,7 @@ class GetDocumentation(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name='py-doc', aliases=['python-doc', 'python-docs', 'py-docs', 'pydoc'])
-    async def pydocs(self, ctx, *, name: str):
+    async def pydoc(self, ctx, *, name: str):
         """Get documentation for a Python module, function or class\n
         Usage: `?py-doc <your-query>`\n"""
 
@@ -53,20 +61,26 @@ class GetDocumentation(commands.Cog):
         with redirect_stdout(doc):
             try:
                 help(name)
-            except:
-                try:
-                    importlib.import_module(name.split('.', maxsplit=2)[0])
-                except ImportError or ModuleNotFoundError or NameError:
-                    return await ctx.reply("Query could not be found! \
-If your query is in any module please tell the author to install the module so that \
-you can get the documentation.")
+            except ImportError or ModuleNotFoundError or NameError:
+                return await ctx.reply(NOT_FOUND_TEXT)
         
-        info = doc.getvalue()[doc.getvalue().find('\n\n'):].strip().replace(' |  ', '')
+        with open('./temp.rst', 'w') as f:
+            f.write(doc.getvalue())
+        returnCode = os.system(SHELL_COMMAND)
+        if returnCode != 0:
+            return await ctx.reply("Failed to generate documentation!")
+
+        with open('./temp.txt', 'r') as f:
+            content = f.read()
+        
+        os.system("rm temp.rst")
+        os.system("rm temp.txt")
+        if content.startswith("No Python documentation found for"):
+            return await ctx.reply(NOT_FOUND_TEXT)
+
+        info = content[content.find('\n'):].strip().replace(' |  ', '')
         title = info[:info.find('\n')]
-        if info == '' or title == '':
-            return await ctx.reply("Query could not be found! \
-If your query is in any module please tell the author to install the module so that \
-you can get the documentation.")
+
         summary = ''
         for line in info[:info.find('Method')].strip().replace(title, '').split('\n'):
             if len(summary) < 1024:
@@ -75,14 +89,14 @@ you can get the documentation.")
                 summary += '...'
                 break
 
-        embed = discord.Embed(title=discord.utils.escape_markdown(title), 
-            description=discord.utils.escape_markdown(summary), 
+        embed = discord.Embed(title=title, 
+            description=summary, 
             colour=discord.Colour.random()
-            )
+        )
 
         if info.find('Method') != -1 and len(info) < 1000:
             methods = info[info.find('Method'):].strip()
-            embed.add_field(name='Methods', value=discord.utils.escape_markdown(methods), inline=False)
+            embed.add_field(name='Methods', value=methods, inline=False)
 
         await ctx.send(embed=embed)
 

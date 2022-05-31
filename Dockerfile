@@ -16,8 +16,7 @@ RUN apt-get -y update \
         protobuf-compiler \
         gcc \
         libnl-route-3-200 \
-        libprotobuf17 \
-        python3-venv 
+        libprotobuf17
         
 RUN git clone https://github.com/google/nsjail.git .
 RUN make
@@ -31,6 +30,7 @@ RUN apt-get -y update \
         gcc \
         libnl-route-3-200 \
         libprotobuf17 \
+        pandoc \
         python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
