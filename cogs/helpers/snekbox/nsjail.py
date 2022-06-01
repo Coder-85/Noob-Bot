@@ -10,8 +10,6 @@ from tempfile import NamedTemporaryFile
 from typing import Iterable
 
 from google.protobuf import text_format
-
-from . import DEBUG, utils
 from .config_pb2 import NsJailConfig
 
 log = logging.getLogger(__name__)
@@ -25,6 +23,7 @@ LOG_BLACKLIST = ("Process will be ",)
 # NSJAIL_PATH = "./cogs/helpers/snekbox/nsjail/nsjail"
 NSJAIL_PATH = "/usr/sbin/nsjail"
 NSJAIL_CFG = "./cogs/helpers/snekbox/nsjail/snekbox.cfg"
+DEBUG = False
 
 # Limit of stdout bytes we consume before terminating nsjail
 OUTPUT_MAX = 1_000_000  # 1 MB
@@ -41,10 +40,6 @@ class NsJail:
     def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
-        self.cgroup_version = utils.cgroup.init(self.config)
-        self.ignore_swap_limits = utils.swap.should_ignore_limit(self.config, self.cgroup_version)
-
-        log.info(f"Assuming cgroup version {self.cgroup_version}.")
 
     @staticmethod
     def _read_config() -> NsJailConfig:
@@ -148,13 +143,6 @@ class NsJail:
         `py_args` are arguments to pass to the Python subprocess before the code,
         which is the last argument. By default, it's "-c", which executes the code given.
         """
-        if self.cgroup_version == 2:
-            nsjail_args = ("--use_cgroupv2", *nsjail_args)
-
-        if self.ignore_swap_limits:
-            nsjail_args = (
-                "--cgroup_mem_memsw_max", "0", "--cgroup_mem_swap_max", "-1", *nsjail_args
-            )
 
         with NamedTemporaryFile() as nsj_log:
             args = (
@@ -165,11 +153,6 @@ class NsJail:
                 "--",
                 self.config.exec_bin.path, *self.config.exec_bin.arg, *py_args, CODE_TEMPLATE.format(code)
             )
-
-            msg = "Executing code..."
-            if DEBUG:
-                msg = f"{msg[:-3]}:\n{textwrap.indent(code, '    ')}\nWith the arguments {args}."
-            log.info(msg)
 
             try:
                 nsjail = subprocess.Popen(

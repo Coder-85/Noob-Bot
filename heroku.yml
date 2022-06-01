@@ -3,3 +3,5 @@ build:
     worker: Dockerfile
   config:
     BOT_TOKEN: $BOT_TOKEN
+    GOOGLE_API_KEY: $GOOGLE_API_KEY
+    CX_TOKEN: $CX_TOKEN
