@@ -1,5 +1,4 @@
 *.swp
-config_pb2.py
 **/__pycache__/**
 .env
 cogs/helpers/snekbox/nsjail/nsjail
