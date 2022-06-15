@@ -10,11 +10,10 @@ from io import StringIO
 import textwrap
 import importlib
 
-NOT_FOUND_TEXT = "Query could not be found! \
+NOT_FOUND_TEXT = "Invalid query! \
 If your query is in any module please tell the author to install the module so that \
 you can get the documentation."
 
-SHELL_COMMAND = "pandoc convert temp.rst"
 SHELL_COMMAND = "pandoc -s -f rst -t plain --wrap=preserve temp.rst -o temp.txt"
 
 class GetDocumentation(commands.Cog):
@@ -82,21 +81,17 @@ class GetDocumentation(commands.Cog):
         title = info[:info.find('\n')]
 
         summary = ''
-        for line in info[:info.find('Method')].strip().replace(title, '').split('\n'):
-            if len(summary) < 1024:
+        for line in info.strip().replace(title, '').split('\n'):
+            if len(summary) < 1021:
                 summary += line + '\n'
             else:
                 summary += '...'
                 break
 
-        embed = discord.Embed(title=title, 
-            description=summary, 
+        embed = discord.Embed(title=discord.utils.escape_markdown(title), 
+            description=discord.utils.escape_markdown(summary),
             colour=discord.Colour.random()
         )
-
-        if info.find('Method') != -1 and len(info) < 1000:
-            methods = info[info.find('Method'):].strip()
-            embed.add_field(name='Methods', value=methods, inline=False)
 
         await ctx.send(embed=embed)
 
